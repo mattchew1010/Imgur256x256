@@ -13,15 +13,15 @@ tf.config.list_physical_devices()
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-tf.autograph.set_verbosity(0)
 plt.ion()
 
-bs = 16
+batch_size = 16
+image_dir = "./Changed_3"
 
-g = G(bs)
-d = D(bs)
+g = G(batch_size)
+d = D(batch_size)
 #train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
-dataset = tf.keras.utils.image_dataset_from_directory("./Changed_3",shuffle=False, labels=None, batch_size=bs, image_size=(256, 256)).cache().prefetch(1500)
+dataset = tf.keras.utils.image_dataset_from_directory(image_dir,shuffle=False, labels=None, batch_size=batch_size, image_size=(256, 256)).cache().prefetch(1500)
 
 
 
@@ -29,7 +29,7 @@ def generate_and_save_images(model, epoch, test_input):
   # Notice `training` is set to False.
   # This is so all layers run in inference mode (batchnorm).
   
-  os.mkdir("./epoch_{:04d}".format(epoch))
+  os.mkdir("./TrainingData/epoch_{:04d}".format(epoch))
   predictions = (model(test_input, training=False)+1)/2
   print("max: ", np.max(predictions), " min: ", np.min(predictions))
   for i in range(predictions.shape[0]):
@@ -49,7 +49,7 @@ resizeReal = tf.keras.layers.Rescaling(scale=1./255)
 
 @tf.function
 def trainBoth(images):
-    noise = tf.random.normal([bs, 1000])
+    noise = tf.random.normal([batch_size, 1000])
     gen_loss, disc_loss = 0, 0
 
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
@@ -70,7 +70,7 @@ def trainBoth(images):
 
 @tf.function
 def trainGen(images):
-    noise = tf.random.normal([bs, 1000])
+    noise = tf.random.normal([batch_size, 1000])
     gen_loss, disc_loss = 0, 0
 
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
